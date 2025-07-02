@@ -32,8 +32,8 @@ jobs:
       - name: Run tests
         working-directory: flask-azure-app
         run: |
-          source venv/bin/activate && pytest
-
+          source venv/bin/activate 
+          pytest
       - name: Package app for deployment
         run: |
           cd flask-azure-app
