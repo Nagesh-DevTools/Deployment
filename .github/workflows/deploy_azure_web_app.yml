@@ -1,0 +1,67 @@
+name: Test and Deploy Python app to Azure Web App
+ 
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+ 
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+ 
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+ 
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+ 
+      - name: Install dependencies
+        working-directory: flask-azure-app
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
+ 
+      - name: Run tests
+        working-directory: flask-azure-app
+        run: |
+          source venv/bin/activate
+          pytest
+ 
+      - name: Package app for deployment
+        run: |
+          cd my-flask-app
+          zip -r ../release.zip . -x "venv/*" ".git/*" ".github/*" "__pycache__/*"
+ 
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-app
+          path: release.zip
+ 
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+ 
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: python-app
+ 
+      - name: Unzip artifact
+        run: unzip release.zip
+ 
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: 'actions'                          
+          slot-name: 'Production'                     
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_407271A0B5CD4F288DB4AD2CB56D7957 }}
