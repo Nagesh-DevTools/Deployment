@@ -73,6 +73,30 @@ jobs:
           context: .
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/solar:${{ github.sha }}
+
+  deploy-to-azure:
+    needs: docker
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Azure Web App for Containers
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: 'WA-1'       # replace with your Azure Web App name
+          slot-name: 'Production'
+          images: ${{ secrets.DOCKERHUB_USERNAME }}/solar:${{ github.sha }}
+          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
+
+      - name: Configure MongoDB environment variables in Azure Web App
+        uses: azure/cli@v1
+        with:
+          inlineScript: |
+            az webapp config appsettings set \
+              --name WA-1 \
+              --resource-group deploy \
+              --settings MONGO_URI='mongodb+srv://supercluster.d83jj.mongodb.net/superData' \
+                         MONGO_USERNAME='superuser' \
+                         MONGO_PASSWORD='SuperPassword'
+
         
         
 
