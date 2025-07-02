@@ -1,2 +1,4 @@
 flask
 gunicorn
+pytest==7.2.0
+# other dependencies
