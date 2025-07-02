@@ -1,0 +1,91 @@
+name: CI/CD pipeline
+
+on:
+  push:
+
+env:
+  MONGO_URI: 'mongodb+srv://supercluster.d83jj.mongodb.net/superData'
+  MONGO_USERNAME: superuser
+  MONGO_PASSWORD: SuperPassword
+
+jobs:
+  unit-testing:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: testing
+        run: npm test
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: my-artifact
+          path: test-results.xml
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+        
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build 
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/solar:${{ github.sha }}
+
+
+
+      - name: Test Docker container
+        run: |
+          docker images
+          docker run --name solarsystem -d \
+            -p 3000:3000 \
+            -e MONGO_URI=${MONGO_URI} \
+            -e MONGO_USERNAME=${MONGO_USERNAME} \
+            -e MONGO_PASSWORD=${MONGO_PASSWORD} \
+            ${{ secrets.DOCKERHUB_USERNAME }}/solar:${{ github.sha }}
+            
+          echo "Testing URL"
+          wget -q -O - http://127.0.0.1:3000/live | grep live
+
+          
+      - name:  push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/solar:${{ github.sha }}
+        
+        
+
+        
+      
+
+
+    
+
+   
+
+    
+
+    
+
+  
