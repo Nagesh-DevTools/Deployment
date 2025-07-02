@@ -22,7 +22,7 @@ jobs:
           python-version: '3.10'
 
       - name: Install dependencies
-        working-directory: flask-azure-app
+        working-directory: my-flask-app
         run: |
           python -m venv venv
           source venv/bin/activate
@@ -30,13 +30,14 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run tests
-        working-directory: flask-azure-app
+        working-directory: my-flask-app
         run: |
-          source venv/bin/activate 
+          source venv/bin/activate
           pytest
+
       - name: Package app for deployment
         run: |
-          cd flask-azure-app
+          cd my-flask-app
           zip -r ../release.zip . -x "venv/*" ".git/*" ".github/*" "__pycache__/*"
 
       - name: Upload artifact
