@@ -54,7 +54,6 @@ jobs:
           tags: ${{ secrets.DOCKER_USERNAME }}/solar:${{ github.sha }}
 
   deploy:
-    needs: build-and-push
     runs-on: ubuntu-latest
     steps:
       - name: Setup SSH agent
