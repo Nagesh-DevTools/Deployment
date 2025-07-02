@@ -5,7 +5,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return "Hello from Azure Web App + GitHub Actions!"
+    return "Welcome to deployment"
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8001))
