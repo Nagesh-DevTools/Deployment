@@ -28,7 +28,9 @@ jobs:
           source venv/bin/activate
           pip install --upgrade pip
           pip install -r requirements.txt
- 
+          pip install pytest 
+	            
+
       - name: Run tests
         working-directory: flask-azure-app
         run: |
@@ -37,7 +39,7 @@ jobs:
  
       - name: Package app for deployment
         run: |
-          cd my-flask-app
+          cd flask-azure-app
           zip -r ../release.zip . -x "venv/*" ".git/*" ".github/*" "__pycache__/*"
  
       - name: Upload artifact
