@@ -81,3 +81,24 @@ jobs:
           context: .
           push: true
           tags: knightfury285/solar:${{ github.sha }}
+
+ 
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup SSH agent
+        uses: webfactory/ssh-agent@v0.8.0
+        with:
+          ssh-private-key: ${{ secrets.VM_SSH_KEY }}
+
+      - name: Deploy Docker image on Azure VM
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USER }}@${{ secrets.VM_IP }} << EOF
+            docker login --username ${{ secrets.DOCKER_USERNAME }} --password-stdin <<< "${{ secrets.DOCKER_PASSWORD }}"
+            docker pull knightfury285/solar:8977ab6a0ab5832e8a3fb4d42d55516a75b3a11b
+            docker stop myapp || true
+            docker rm myapp || true
+            docker run -d --name myapp -p 3000:3000 knightfury285/solar:8977ab6a0ab5832e8a3fb4d42d55516a75b3a11b
+            docker logout
+          EOF
+
